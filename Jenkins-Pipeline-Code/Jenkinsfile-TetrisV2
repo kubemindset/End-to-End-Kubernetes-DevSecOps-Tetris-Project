@@ -81,30 +81,35 @@ pipeline {
             steps {
                 git branch: 'master', url: 'https://github.com/kubemindset/End-to-End-Kubernetes-DevSecOps-Tetris-Project.git'
             }
-        }
-        stage('Update Deployment file') {
-            environment {
-                GIT_REPO_NAME = "End-to-End-Kubernetes-DevSecOps-Tetris-Project"
-                GIT_USER_NAME = "kubemindset"
-            }
-            steps {
-                dir('Manifest-file') {
-                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                        sh '''
-                            git config user.email "bhawaresonnal@gmail.com"
-                            git config user.name "kubemindset"
-                            BUILD_NUMBER=${BUILD_NUMBER}
-                            echo $BUILD_NUMBER
-                            imageTag=$(grep -oP '(?<=tetrisv2:)[^ ]+' deployment-service.yml)
-                            echo $imageTag
-                            sed -i "s/tetrisv2:${imageTag}/tetrisv2:${BUILD_NUMBER}/" deployment-service.yml
-                            git add deployment-service.yml
-                            git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
-                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                        '''
-                    }
-                }
+        } 
+	stage('Update Deployment file') {
+    environment {
+        GIT_REPO_NAME = "End-to-End-Kubernetes-DevSecOps-Tetris-Project"
+        GIT_USER_NAME = "kubemindset"
+    }
+    steps {
+        dir('Manifest-file') {
+            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                sh '''
+                    git config user.email "bhawaresonnal@gmail.com"
+                    git config user.name "kubemindset"
+
+                    echo "Build Number: ${BUILD_NUMBER}"
+
+                    # Extract current image tag (handle missing case gracefully)
+                    imageTag=$(grep -oP 'tetrisv2:\\K[0-9]+' deployment-service.yml || echo "latest")
+                    echo "Previous image tag: $imageTag"
+
+                    # Replace the image tag in the YAML file
+                    sed -i "s/tetrisv2:${imageTag}/tetrisv2:${BUILD_NUMBER}/" deployment-service.yml
+
+                    # Git operations
+                    git add deployment-service.yml
+                    git commit -m "Update deployment Image to version ${BUILD_NUMBER}" || echo "No changes to commit"
+                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                '''
             }
         }
     }
 }
+
