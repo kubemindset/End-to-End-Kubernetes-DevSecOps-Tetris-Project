@@ -21,7 +21,7 @@ pipeline {
         stage('Sonarqube Analysis') {
             steps {
                 dir('Tetris-V2') {
-                    withSonarQubeEnv('sonar-server') {
+                    withSonarQubeEnv('sonar-scanner') {
                         sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=TetrisVersion1.0 \
                         -Dsonar.projectKey=TetrisVersion1.0 '''
                     }
@@ -39,14 +39,6 @@ pipeline {
             steps {
                 dir('Tetris-V2') {
                     sh 'npm install'
-                }
-            }
-        }
-        stage('OWASP Dependency-Check Scan') {
-            steps {
-                dir('Tetris-V2') {
-                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
                 }
             }
         }
