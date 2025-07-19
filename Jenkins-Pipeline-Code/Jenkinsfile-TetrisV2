@@ -106,7 +106,7 @@ pipeline {
                     # Git operations
                     git add deployment-service.yml
                     git commit -m "Update deployment Image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+		    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                 '''
             }
         }
